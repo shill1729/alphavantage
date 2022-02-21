@@ -107,10 +107,16 @@ class av:
 
     def _getStocks(self, symbols, period = "daily", interval = None, adjusted = True, what = "close"):
         """ Download a collection of stocks"""
+        stocks = []
         if len(symbols) <= 30:
             stocks = [self._getStock(i, period = period, interval = interval, adjusted = adjusted)[what] for i in symbols]
         else:
-            raise ValueError("TODO: implement sleep for AV api between batches of 30 stocks")
+            for i in range(len(symbols)):
+                stocks.append(self._getStock(symbols[i], period = period, interval = interval, adjusted = adjusted)[what])
+                if i%30==0:
+                    time.sleep(60)
+            #raise ValueError("TODO: implement sleep for AV api between batches of 30 stocks")
+            
         w = pd.DataFrame(data = stocks).transpose()
         w.columns = symbols
         w.dropna(axis = 0, how = 'any', inplace = True)
