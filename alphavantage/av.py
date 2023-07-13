@@ -196,10 +196,10 @@ class av:
         """
         stocks = []
         if len(symbols) <= 30:
-            stocks = [self._getStock(i, period=period, interval=interval, adjusted=adjusted)[what] for i in symbols]
+            stocks = [self._get_stock(i, period=period, interval=interval, adjusted=adjusted)[what] for i in symbols]
         else:
             for i in range(len(symbols)):
-                stocks.append(self._getStock(symbols[i], period=period, interval=interval, adjusted=adjusted)[what])
+                stocks.append(self._get_stock(symbols[i], period=period, interval=interval, adjusted=adjusted)[what])
                 if i % 30 == 0:
                     time.sleep(60)
         w = pd.DataFrame(data=stocks).transpose()
@@ -262,7 +262,7 @@ class av:
                 "Pass what='close' instead, or anything from OHLCV.")
 
         if len(symbols) <= 30:
-            coins = [self._getCoin(i, period=period, interval=interval)[what] for i in symbols]
+            coins = [self._get_coin(i, period=period, interval=interval)[what] for i in symbols]
         else:
             raise ValueError("TODO: implement sleep for AV api between batches of 30 stocks")
         w = pd.DataFrame(data=coins).transpose()
@@ -294,7 +294,7 @@ class av:
         n = len(symbols)
 
         if n == 1:
-            if symbols[0] in self.getCoinNames():
+            if symbols[0] in get_coin_names():
                 return self._get_coin(symbols[0], period, interval, market="USD", datatype=datatype)
             else:
                 return self._get_stock(symbols[0], period, interval, adjusted, datatype)
