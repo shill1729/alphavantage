@@ -82,6 +82,22 @@ def get_yahoo_quote_v10(ticker):
         raise Exception("Error: Unable to fetch stock price data.")
 
 
+def get_yahoo_quote_v6(ticker):
+    url = f"https://query2.finance.yahoo.com/v6/finance/quoteSummary/{ticker}?modules=price"
+    headers = {'User-agent': 'Mozilla/5.0'}
+    response = requests.get(url, headers=headers)
+    content_type = response.headers['Content-Type']
+    if content_type == 'application/json;charset=utf-8' or 'application/json':
+        data = response.json()
+        try:
+            price = data["quoteSummary"]["result"][0]["price"]["regularMarketPrice"]["raw"]
+            return price
+        except (KeyError, TypeError):
+            raise Exception("Error: Unable to fetch stock price data.")
+    else:
+        raise Exception("Error: Unable to fetch stock price data.")
+
+
 class av:
     def __init__(self, tier="premium"):
         """
