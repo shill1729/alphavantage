@@ -9,9 +9,10 @@ setup(name='alphavantage',
       license='MIT',
       packages=['alphavantage'],
       install_requires=[
-          'np',
+          'numpy',
           'pandas',
           "requests",
+          "finnhub-python"
       ],
       zip_safe=False)
 

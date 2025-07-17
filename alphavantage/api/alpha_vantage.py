@@ -1,24 +1,9 @@
-import numpy as np
-import pandas as pd
-import requests
-import finnhub
-import datetime as dt
-import time
-
-from enum import Enum
-from typing import List, Union, Optional
 from functools import lru_cache
-from pandas import DataFrame
+from typing import List, Union, Optional
+import pandas as pd
 
-from api.finnhub_quote import get_quote_from_client
-
-
-
-
-
-
-
-
+from alphavantage.core.periods import Period, Interval
+from alphavantage.utils.error_handling import RequestRetryHandler
 
 class AlphaVantageAPI:
     """
@@ -36,11 +21,30 @@ class AlphaVantageAPI:
             api_key (str): The API key for accessing Alpha Vantage API.
         """
         self.api_key = api_key
+        self.retry_handler = RequestRetryHandler()
 
     # TODO add retry's by using requests.Session() ...
+    #  Update: just tried it below...
+    # def _make_request(self, params: dict) -> dict:
+    #     """
+    #     Makes a request to the Alpha Vantage API with the provided parameters.
+    #
+    #     Args:
+    #         params (dict): Parameters for the API request.
+    #
+    #     Returns:
+    #         dict: JSON response from the API.
+    #
+    #     Raises:
+    #         HTTPError: If the API request fails.
+    #     """
+    #     params['apikey'] = self.api_key
+    #     response = requests.get(self.BASE_URL, params=params, timeout=30)
+    #     response.raise_for_status()
+    #     return response.json()
     def _make_request(self, params: dict) -> dict:
         """
-        Makes a request to the Alpha Vantage API with the provided parameters.
+        Makes a request to the Alpha Vantage API with retry logic.
 
         Args:
             params (dict): Parameters for the API request.
@@ -49,10 +53,10 @@ class AlphaVantageAPI:
             dict: JSON response from the API.
 
         Raises:
-            HTTPError: If the API request fails.
+            HTTPError: If the API request fails after retries.
         """
         params['apikey'] = self.api_key
-        response = requests.get(self.BASE_URL, params=params, timeout=30)
+        response = self.retry_handler.request_with_retry("GET", self.BASE_URL, params=params, timeout=30)
         response.raise_for_status()
         return response.json()
 
@@ -186,36 +190,3 @@ class AlphaVantageAPI:
         result.columns = symbols
         result = result.dropna()
         return result
-
-    def get_log_returns(self, symbols: Union[str, List[str]], period: Period,
-                        interval: Optional[Interval] = None, adjusted: bool = True) -> pd.DataFrame:
-        """
-        Calculates log returns for the specified symbols over the given period.
-
-        Args:
-            symbols (Union[str, List[str]]): A single symbol or a list of symbols.
-            period (Period): The period for the historical data.
-            interval (Optional[Interval]): The interval for intraday data (required if period is INTRADAY).
-            adjusted (bool): Whether to retrieve adjusted data.
-
-        Returns:
-            pd.DataFrame: DataFrame containing log returns for the specified symbols.
-        """
-        prices = self.get_assets(symbols, period, interval, adjusted)
-        # # Not use diff
-        # return np.log(prices / prices.shift(1))[1:]
-        log_returns = prices.apply(lambda x: np.diff(np.log(x)))
-        return log_returns.dropna()
-
-
-if __name__ == "__main__":
-    import os
-
-    alpha = 0.1
-    api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
-    period = Period.INTRADAY
-    interval = Interval.ONE_MIN
-    av = AlphaVantageAPI(api_key)
-    s = av.get_assets(["BTC", "DOGE"], period=period, interval=interval)
-    x = av.get_log_returns(["BTC", "DOGE"], period=period, interval=interval)
-    print(x.mean())
