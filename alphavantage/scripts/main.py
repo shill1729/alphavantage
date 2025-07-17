@@ -1,8 +1,8 @@
 if __name__ == "__main__":
     import os
-    from alphavantage.api.alpha_vantage import AlphaVantageAPI
-    from alphavantage.core.periods import Period, Interval
-    from alphavantage.core.returns import get_log_returns, get_arithmetic_returns
+    from alphavantage.api import AlphaVantageAPI
+    from alphavantage.core import Period, Interval
+    from alphavantage.core import get_log_returns, get_arithmetic_returns
 
 
     def main():

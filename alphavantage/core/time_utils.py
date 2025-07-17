@@ -1,5 +1,5 @@
 from typing import Optional
-from periods import Period, Interval
+from alphavantage.core.periods import Period, Interval
 
 def compute_time_step(period: Period, interval: Optional[Interval] = None):
     """
